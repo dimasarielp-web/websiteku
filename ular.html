@@ -1,94 +1,226 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Ular Tangga GILA 🐍🔥</title>
+  <title>Ular Tangga VISUAL 🔥</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
     body {
       text-align: center;
       font-family: Arial;
-      background: linear-gradient(#0f2027, #203a43, #2c5364);
+      background: #0f2027;
       color: white;
+    }
+
+    #gameWrap {
+      position: relative;
+      width: 320px;
+      margin: auto;
     }
 
     #board {
       width: 320px;
       height: 320px;
-      margin: auto;
       display: grid;
       grid-template-columns: repeat(10, 1fr);
       gap: 2px;
-      position: relative;
     }
 
     .cell {
-      font-size: 10px;
+      font-size: 9px;
       display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
+      background: #2a5298;
     }
 
     .p1 { background: lime; }
     .p2 { background: cyan; }
 
-    .snake::after {
-      content: "🐍";
+    canvas {
       position: absolute;
-      font-size: 14px;
+      left: 0;
+      top: 0;
+      pointer-events: none;
     }
 
-    .ladder::after {
-      content: "🪜";
-      position: absolute;
-      font-size: 14px;
+    #diceBox {
+      margin: 15px;
+      width: 60px;
+      height: 60px;
+      background: white;
+      margin-inline: auto;
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 5px;
+      padding: 5px;
+      border-radius: 10px;
     }
 
-    #dice {
-      font-size: 50px;
-      margin: 10px;
+    .dot {
+      width: 10px;
+      height: 10px;
+      background: black;
+      border-radius: 50%;
+      opacity: 0;
     }
 
     button {
       padding: 10px;
-      font-size: 16px;
       border-radius: 10px;
       border: none;
       background: orange;
-      color: black;
     }
   </style>
 </head>
 <body>
 
-<h2>🐍 ULAR TANGGA GILA 🎲</h2>
+<h2>🐍 ULAR TANGGA VISUAL 🎲</h2>
 <p id="turn">Player 1</p>
-<div id="dice">🎲</div>
 
-<div id="board"></div>
+<div id="diceBox"></div>
+
+<div id="gameWrap">
+  <div id="board"></div>
+  <canvas id="canvas" width="320" height="320"></canvas>
+</div>
 
 <button onclick="rollDice()">LEMpar 🎲</button>
 
 <script>
-let p1 = 1;
-let p2 = 1;
-let turn = 1;
-let rolling = false;
+let p1=1, p2=1, turn=1, rolling=false;
 
-const snakes = {16:6, 48:30, 79:19, 93:68};
-const ladders = {3:22, 20:59, 41:80, 71:92};
+const snakes = {16:6,48:30,79:19,93:68};
+const ladders = {3:22,20:59,41:80,71:92};
 
-function createBoard() {
-  const board = document.getElementById("board");
+function createBoard(){
+  const board=document.getElementById("board");
+  for(let i=100;i>=1;i--){
+    let c=document.createElement("div");
+    c.className="cell";
+    c.id="c"+i;
+    c.innerText=i;
+    board.appendChild(c);
+  }
+}
 
-  for (let i = 100; i >= 1; i--) {
-    let cell = document.createElement("div");
-    cell.className = "cell";
-    cell.id = "c" + i;
+function getXY(n){
+  let row=Math.floor((n-1)/10);
+  let col=(n-1)%10;
+  if(row%2===1) col=9-col;
 
-    // warna papan
-    cell.style.background = i % 2 ? "#1e3c72" : "#2a5298";
+  let x=col*32+16;
+  let y=(9-row)*32+16;
+  return {x,y};
+}
 
-    // tandain ular/tangga
-    if (sn
+function draw(){
+  let ctx=document.getElementById("canvas").getContext("2d");
+  ctx.clearRect(0,0,320,320);
+
+  // ladders
+  ctx.strokeStyle="yellow";
+  ctx.lineWidth=4;
+  for(let k in ladders){
+    let a=getXY(+k), b=getXY(ladders[k]);
+    ctx.beginPath();
+    ctx.moveTo(a.x,a.y);
+    ctx.lineTo(b.x,b.y);
+    ctx.stroke();
+  }
+
+  // snakes
+  ctx.strokeStyle="red";
+  ctx.lineWidth=5;
+  for(let k in snakes){
+    let a=getXY(+k), b=getXY(snakes[k]);
+    ctx.beginPath();
+    ctx.moveTo(a.x,a.y);
+    ctx.bezierCurveTo(a.x+20,a.y-20,b.x-20,b.y+20,b.x,b.y);
+    ctx.stroke();
+  }
+}
+
+function update(){
+  document.querySelectorAll(".cell").forEach(c=>c.classList.remove("p1","p2"));
+  document.getElementById("c"+p1)?.classList.add("p1");
+  document.getElementById("c"+p2)?.classList.add("p2");
+  document.getElementById("turn").innerText="Player "+turn;
+}
+
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+async function move(pl,steps){
+  for(let i=0;i<steps;i++){
+    if(pl===1)p1++; else p2++;
+    update();
+    await sleep(150);
+  }
+
+  let pos=pl===1?p1:p2;
+
+  if(ladders[pos]){
+    if(pl===1)p1=ladders[pos]; else p2=ladders[pos];
+  }
+  else if(snakes[pos]){
+    if(pl===1)p1=snakes[pos]; else p2=snakes[pos];
+  }
+
+  if(p1>=100){alert("P1 MENANG");location.reload();}
+  if(p2>=100){alert("P2 MENANG");location.reload();}
+
+  update();
+}
+
+function renderDice(n){
+  let box=document.getElementById("diceBox");
+  box.innerHTML="";
+  for(let i=0;i<9;i++){
+    let d=document.createElement("div");
+    d.className="dot";
+    box.appendChild(d);
+  }
+
+  const map={
+    1:[4],
+    2:[0,8],
+    3:[0,4,8],
+    4:[0,2,6,8],
+    5:[0,2,4,6,8],
+    6:[0,2,3,5,6,8]
+  };
+
+  map[n].forEach(i=>box.children[i].style.opacity=1);
+}
+
+async function rollDice(){
+  if(rolling)return;
+  rolling=true;
+
+  for(let i=0;i<10;i++){
+    renderDice(Math.floor(Math.random()*6)+1);
+    await sleep(50);
+  }
+
+  let d=Math.floor(Math.random()*6)+1;
+  renderDice(d);
+
+  if(turn===1){
+    await move(1,d);
+    turn=2;
+  }else{
+    await move(2,d);
+    turn=1;
+  }
+
+  rolling=false;
+  update();
+}
+
+createBoard();
+draw();
+update();
+</script>
+
+</body>
+</html>
