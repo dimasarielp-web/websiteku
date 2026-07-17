@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Quiz Ultimate 💀</title>
+  <title>Quiz GOD 🌍</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
@@ -13,30 +13,16 @@
       padding: 20px;
     }
 
-    .box {
-      background: rgba(255,255,255,0.05);
-      padding: 20px;
-      border-radius: 15px;
-      max-width: 400px;
-      margin: auto;
-    }
-
-    input, select {
-      padding: 10px;
-      margin: 10px;
-      border-radius: 10px;
-      border: none;
-      width: 80%;
-    }
-
     .option {
       background: #333;
       margin: 10px;
-      padding: 10px;
+      padding: 12px;
       border-radius: 10px;
       cursor: pointer;
+      transition: 0.2s;
     }
 
+    .option:hover { transform: scale(1.05); }
     .correct { background: green; }
     .wrong { background: red; }
 
@@ -50,111 +36,162 @@
 </head>
 <body>
 
-<h2>🧠 QUIZ ULTIMATE</h2>
-
-<div id="app" class="box"></div>
+<h2>🌍 QUIZ GLOBAL</h2>
+<div id="app"></div>
 
 <script>
-let user, category, score=0, xp=0, current;
+let questions = [];
+let index = 0;
+let score = 0;
+let life = 3;
+let timer;
+let timeLeft = 10;
+let combo = 0;
+let difficulty = "easy";
 
-const DB = {
-  coding: [
-    {q:"HTML itu?", o:["Bahasa web","Game","OS","DB"], a:0},
-    {q:"CSS untuk?", o:["Logic","Design","Server","AI"], a:1}
-  ],
-  umum: [
-    {q:"Ibukota Indonesia?", o:["Jakarta","Bandung","Medan","Bali"], a:0},
-    {q:"2+2?", o:["3","4","5","6"], a:1}
-  ]
-};
+// SOUND
+const correctSound = new Audio("https://www.soundjay.com/buttons/sounds/button-3.mp3");
+const wrongSound = new Audio("https://www.soundjay.com/buttons/sounds/button-10.mp3");
 
-// LOGIN SCREEN
-function login(){
+// LOGIN / MENU
+function menu(){
   document.getElementById("app").innerHTML = `
-    <h3>Masuk</h3>
-    <input id="name" placeholder="Nama kamu">
-    <select id="cat">
-      <option value="coding">Coding</option>
-      <option value="umum">Umum</option>
+    <h3>Pilih Level</h3>
+    <select id="diff">
+      <option value="easy">Easy 😎</option>
+      <option value="medium">Medium 😐</option>
+      <option value="hard">Hard 💀</option>
     </select>
-    <br>
+    <br><br>
     <button onclick="start()">START 🚀</button>
   `;
 }
 
 // START GAME
-function start(){
-  user = document.getElementById("name").value || "Player";
-  category = document.getElementById("cat").value;
+async function start(){
+  difficulty = document.getElementById("diff").value;
+
+  score = 0;
+  life = 3;
+  combo = 0;
+  index = 0;
+
+  // FETCH API 🌍
+  let res = await fetch(`https://opentdb.com/api.php?amount=20&difficulty=${difficulty}&type=multiple`);
+  let data = await res.json();
+
+  questions = data.results.map(q=>{
+    let options = [...q.incorrect_answers];
+    let correctIndex = Math.floor(Math.random()*4);
+    options.splice(correctIndex,0,q.correct_answer);
+
+    return {
+      q: decode(q.question),
+      o: options.map(decode),
+      a: correctIndex
+    };
+  });
+
   loadQ();
+}
+
+// FIX HTML TEXT
+function decode(text){
+  let txt = document.createElement("textarea");
+  txt.innerHTML = text;
+  return txt.value;
 }
 
 // LOAD QUESTION
 function loadQ(){
-  let list = DB[category];
-  current = list[Math.floor(Math.random()*list.length)];
+  if(life <= 0){ gameOver(); return; }
+  if(index >= questions.length){ endGame(); return; }
 
-  let html = `<h3>${current.q}</h3>`;
-  current.o.forEach((opt,i)=>{
-    html += `<div class="option" onclick="check(this,${i})">${opt}</div>`;
+  timeLeft = 10;
+  startTimer();
+
+  let q = questions[index];
+
+  let html = `
+    <h3>${q.q}</h3>
+    <p>❤️ ${life} | ⏱️ ${timeLeft}s | 🔥 ${combo}</p>
+  `;
+
+  q.o.forEach((opt,i)=>{
+    html += `<div class="option" onclick="check(${i})">${opt}</div>`;
   });
 
-  html += `<p>Score: ${score} | XP: ${xp}</p>`;
-  html += `<button onclick="loadQ()">Next</button>`;
+  html += `<p>Score: ${score}</p>`;
 
   document.getElementById("app").innerHTML = html;
+}
+
+// TIMER
+function startTimer(){
+  clearInterval(timer);
+  timer = setInterval(()=>{
+    timeLeft--;
+    document.querySelector("p").innerText = `❤️ ${life} | ⏱️ ${timeLeft}s | 🔥 ${combo}`;
+
+    if(timeLeft <= 0){
+      clearInterval(timer);
+      life--;
+      combo = 0;
+      wrongSound.play();
+      index++;
+      loadQ();
+    }
+  },1000);
 }
 
 // CHECK
-function check(el,i){
-  let opts=document.querySelectorAll(".option");
+function check(i){
+  clearInterval(timer);
 
-  if(i===current.a){
-    el.classList.add("correct");
-    score++;
-    xp+=10;
-  }else{
-    el.classList.add("wrong");
-    opts[current.a].classList.add("correct");
+  let q = questions[index];
+  let opts = document.querySelectorAll(".option");
+
+  if(i === q.a){
+    opts[i].classList.add("correct");
+    correctSound.play();
+
+    combo++;
+    score += 10 + combo*2;
+
+  } else {
+    opts[i].classList.add("wrong");
+    opts[q.a].classList.add("correct");
+    wrongSound.play();
+
+    life--;
+    combo = 0;
   }
 
-  saveScore();
+  index++;
+  setTimeout(loadQ,800);
 }
 
-// SAVE LEADERBOARD
-function saveScore(){
-  let data = JSON.parse(localStorage.getItem("rank")||"[]");
-
-  let found = data.find(d=>d.name===user);
-  if(found){
-    found.score = score;
-    found.xp = xp;
-  }else{
-    data.push({name:user,score,xp});
-  }
-
-  localStorage.setItem("rank", JSON.stringify(data));
+// END
+function endGame(){
+  document.getElementById("app").innerHTML = `
+    <h2>🏆 SELESAI</h2>
+    <p>Score: ${score}</p>
+    <button onclick="menu()">Main Lagi</button>
+  `;
 }
 
-// LEADERBOARD
-function showRank(){
-  let data = JSON.parse(localStorage.getItem("rank")||"[]");
-  data.sort((a,b)=>b.score-a.score);
-
-  let html = "<h3>🏆 Leaderboard</h3>";
-  data.forEach(d=>{
-    html += `<p>${d.name} - Score:${d.score} XP:${d.xp}</p>`;
-  });
-
-  html += `<button onclick="login()">Back</button>`;
-  document.getElementById("app").innerHTML = html;
+// GAME OVER
+function gameOver(){
+  document.getElementById("app").innerHTML = `
+    <h2>💀 GAME OVER</h2>
+    <p>Score: ${score}</p>
+    <button onclick="menu()">Coba Lagi</button>
+  `;
 }
 
 // INIT
-login();
+menu();
 </script>
-
-<button onclick="showRank()">🏆 Leaderboard</button>
 
 </body>
 </html>
