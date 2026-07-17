@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>FPS PRO 🔫🔥</title>
+  <title>FPS GOD MODE 🔫🔥</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
   <style>
     body {
       margin: 0;
@@ -9,6 +12,7 @@
       overflow: hidden;
       font-family: Arial;
       color: white;
+      touch-action: none;
     }
 
     #game {
@@ -17,28 +21,19 @@
       position: relative;
     }
 
-    #player {
-      width: 20px;
-      height: 20px;
-      background: cyan;
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-    }
-
     .enemy {
-      width: 50px;
-      height: 50px;
+      width: 60px;
+      height: 60px;
       background: red;
       border-radius: 50%;
       position: absolute;
+      transition: transform 0.1s;
     }
 
     #crosshair {
       position: absolute;
-      width: 20px;
-      height: 20px;
+      width: 25px;
+      height: 25px;
       border: 2px solid white;
       border-radius: 50%;
       top: 50%;
@@ -53,18 +48,162 @@
       left: 10px;
     }
 
-    button {
+    #joystick {
       position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 10px;
+      bottom: 40px;
+      left: 30px;
+      width: 100px;
+      height: 100px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+    }
+
+    #stick {
+      width: 40px;
+      height: 40px;
+      background: white;
+      border-radius: 50%;
+      position: absolute;
+      top: 30px;
+      left: 30px;
+    }
+
+    #startBtn {
+      position: absolute;
+      bottom: 30px;
+      right: 30px;
+      padding: 15px;
+      border-radius: 10px;
       background: lime;
       border: none;
-      border-radius: 10px;
     }
   </style>
 </head>
 <body>
 
-<div
+<div id="game">
+  <div id="crosshair"></div>
+
+  <div id="hud">
+    <p id="skor">Skor: 0</p>
+    <p id="hp">HP: 5</p>
+  </div>
+
+  <div id="joystick">
+    <div id="stick"></div>
+  </div>
+</div>
+
+<button id="startBtn" onclick="startGame()">START 🔥</button>
+
+<script>
+let skor = 0;
+let hp = 5;
+let enemies = [];
+let running = false;
+let speed = 1;
+
+let player = { x: window.innerWidth/2, y: window.innerHeight/2 };
+
+let stick = document.getElementById("stick");
+let joy = document.getElementById("joystick");
+
+let joyActive = false;
+
+joy.addEventListener("touchstart", () => joyActive = true);
+joy.addEventListener("touchend", () => {
+  joyActive = false;
+  stick.style.left = "30px";
+  stick.style.top = "30px";
+});
+
+joy.addEventListener("touchmove", (e) => {
+  if (!joyActive) return;
+
+  let rect = joy.getBoundingClientRect();
+  let x = e.touches[0].clientX - rect.left - 50;
+  let y = e.touches[0].clientY - rect.top - 50;
+
+  stick.style.left = (x + 30) + "px";
+  stick.style.top = (y + 30) + "px";
+
+  player.x += x * 0.05;
+  player.y += y * 0.05;
+});
+
+function spawnEnemy() {
+  if (!running) return;
+
+  let game = document.getElementById("game");
+
+  let e = document.createElement("div");
+  e.classList.add("enemy");
+
+  e.x = Math.random() * window.innerWidth;
+  e.y = -60;
+
+  e.style.left = e.x + "px";
+  e.style.top = e.y + "px";
+
+  e.onclick = (ev) => {
+    ev.stopPropagation();
+
+    let headshot = ev.offsetY < 20;
+
+    if (headshot) skor += 3;
+    else skor++;
+
+    document.getElementById("skor").innerHTML = "Skor: " + skor;
+
+    e.style.background = "yellow";
+    e.style.transform = "scale(1.5)";
+
+    setTimeout(() => e.remove(), 100);
+  };
+
+  game.appendChild(e);
+  enemies.push(e);
+}
+
+function moveEnemy() {
+  if (!running) return;
+
+  enemies.forEach(e => {
+    e.y += speed + Math.sin(e.y/20);
+
+    e.style.top = e.y + "px";
+
+    if (e.y > window.innerHeight) {
+      hp--;
+      document.getElementById("hp").innerHTML = "HP: " + hp;
+      e.remove();
+
+      if (hp <= 0) {
+        alert("💀 GAME OVER!");
+        location.reload();
+      }
+    }
+  });
+
+  speed += 0.002;
+}
+
+document.getElementById("game").addEventListener("touchstart", () => {
+  document.body.style.transform = "scale(0.97)";
+  setTimeout(() => {
+    document.body.style.transform = "scale(1)";
+  }, 50);
+});
+
+function startGame() {
+  running = true;
+
+  document.getElementById("startBtn").style.display = "none";
+
+  setInterval(spawnEnemy, 700);
+  setInterval(moveEnemy, 30);
+}
+</script>
+
+</body>
+</html>
