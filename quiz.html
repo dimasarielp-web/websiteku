@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Quiz GOD 🌍</title>
+  <title>Quiz GOD 🇮🇩</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
@@ -36,7 +36,7 @@
 </head>
 <body>
 
-<h2>🌍 QUIZ GLOBAL</h2>
+<h2>🌍 QUIZ GLOBAL INDONESIA</h2>
 <div id="app"></div>
 
 <script>
@@ -53,17 +53,17 @@ let difficulty = "easy";
 const correctSound = new Audio("https://www.soundjay.com/buttons/sounds/button-3.mp3");
 const wrongSound = new Audio("https://www.soundjay.com/buttons/sounds/button-10.mp3");
 
-// LOGIN / MENU
+// MENU
 function menu(){
   document.getElementById("app").innerHTML = `
-    <h3>Pilih Level</h3>
+    <h3>Pilih Tingkat Kesulitan</h3>
     <select id="diff">
-      <option value="easy">Easy 😎</option>
-      <option value="medium">Medium 😐</option>
-      <option value="hard">Hard 💀</option>
+      <option value="easy">Mudah 😎</option>
+      <option value="medium">Sedang 😐</option>
+      <option value="hard">Sulit 💀</option>
     </select>
     <br><br>
-    <button onclick="start()">START 🚀</button>
+    <button onclick="start()">MULAI 🚀</button>
   `;
 }
 
@@ -76,7 +76,6 @@ async function start(){
   combo = 0;
   index = 0;
 
-  // FETCH API 🌍
   let res = await fetch(`https://opentdb.com/api.php?amount=20&difficulty=${difficulty}&type=multiple`);
   let data = await res.json();
 
@@ -86,8 +85,8 @@ async function start(){
     options.splice(correctIndex,0,q.correct_answer);
 
     return {
-      q: decode(q.question),
-      o: options.map(decode),
+      q: translate(decode(q.question)),
+      o: options.map(o => translate(decode(o))),
       a: correctIndex
     };
   });
@@ -95,11 +94,25 @@ async function start(){
   loadQ();
 }
 
-// FIX HTML TEXT
+// DECODE HTML
 function decode(text){
   let txt = document.createElement("textarea");
   txt.innerHTML = text;
   return txt.value;
+}
+
+// TRANSLATE SIMPLE (BIAR INDO)
+function translate(text){
+  return text
+    .replace(/Which/gi, "Yang mana")
+    .replace(/What/gi, "Apa")
+    .replace(/Who/gi, "Siapa")
+    .replace(/Where/gi, "Di mana")
+    .replace(/When/gi, "Kapan")
+    .replace(/Why/gi, "Kenapa")
+    .replace(/How/gi, "Bagaimana")
+    .replace(/True/gi, "Benar")
+    .replace(/False/gi, "Salah");
 }
 
 // LOAD QUESTION
@@ -114,14 +127,14 @@ function loadQ(){
 
   let html = `
     <h3>${q.q}</h3>
-    <p>❤️ ${life} | ⏱️ ${timeLeft}s | 🔥 ${combo}</p>
+    <p id="info">❤️ ${life} | ⏱️ ${timeLeft}s | 🔥 ${combo}</p>
   `;
 
   q.o.forEach((opt,i)=>{
     html += `<div class="option" onclick="check(${i})">${opt}</div>`;
   });
 
-  html += `<p>Score: ${score}</p>`;
+  html += `<p>Skor: ${score}</p>`;
 
   document.getElementById("app").innerHTML = html;
 }
@@ -131,7 +144,7 @@ function startTimer(){
   clearInterval(timer);
   timer = setInterval(()=>{
     timeLeft--;
-    document.querySelector("p").innerText = `❤️ ${life} | ⏱️ ${timeLeft}s | 🔥 ${combo}`;
+    document.getElementById("info").innerText = `❤️ ${life} | ⏱️ ${timeLeft}s | 🔥 ${combo}`;
 
     if(timeLeft <= 0){
       clearInterval(timer);
@@ -175,7 +188,7 @@ function check(i){
 function endGame(){
   document.getElementById("app").innerHTML = `
     <h2>🏆 SELESAI</h2>
-    <p>Score: ${score}</p>
+    <p>Skor Akhir: ${score}</p>
     <button onclick="menu()">Main Lagi</button>
   `;
 }
@@ -184,7 +197,7 @@ function endGame(){
 function gameOver(){
   document.getElementById("app").innerHTML = `
     <h2>💀 GAME OVER</h2>
-    <p>Score: ${score}</p>
+    <p>Skor Akhir: ${score}</p>
     <button onclick="menu()">Coba Lagi</button>
   `;
 }
