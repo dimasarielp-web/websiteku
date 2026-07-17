@@ -1,152 +1,160 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Quiz Game 🔥</title>
+  <title>Quiz Ultimate 💀</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
     body {
       font-family: Arial;
-      background: linear-gradient(135deg, #1d2b64, #f8cdda);
+      background: #0f2027;
       color: white;
       text-align: center;
       padding: 20px;
     }
 
-    #quizBox {
-      background: rgba(0,0,0,0.5);
+    .box {
+      background: rgba(255,255,255,0.05);
       padding: 20px;
       border-radius: 15px;
       max-width: 400px;
       margin: auto;
     }
 
+    input, select {
+      padding: 10px;
+      margin: 10px;
+      border-radius: 10px;
+      border: none;
+      width: 80%;
+    }
+
     .option {
-      background: #444;
+      background: #333;
       margin: 10px;
       padding: 10px;
       border-radius: 10px;
       cursor: pointer;
     }
 
-    .option:hover {
-      background: #666;
-    }
-
-    #timer {
-      font-size: 20px;
-      margin-bottom: 10px;
-    }
-
-    #score {
-      margin-top: 10px;
-    }
+    .correct { background: green; }
+    .wrong { background: red; }
 
     button {
-      margin-top: 15px;
       padding: 10px;
       border-radius: 10px;
       border: none;
       background: orange;
-      font-size: 16px;
     }
   </style>
 </head>
 <body>
 
-<h2>🧠 QUIZ GAME</h2>
+<h2>🧠 QUIZ ULTIMATE</h2>
 
-<div id="quizBox">
-  <div id="timer">⏱️ 10</div>
-  <h3 id="question">Loading...</h3>
-
-  <div id="options"></div>
-
-  <p id="feedback"></p>
-  <p id="score">Score: 0</p>
-
-  <button onclick="nextQuestion()">Next ➡️</button>
-</div>
+<div id="app" class="box"></div>
 
 <script>
-const questions = [
-  {
-    q: "Bahasa pemrograman untuk web?",
-    o: ["Python", "HTML", "C++", "Java"],
-    a: 1
-  },
-  {
-    q: "2 + 2 = ?",
-    o: ["3", "4", "5", "6"],
-    a: 1
-  },
-  {
-    q: "Ibukota Indonesia?",
-    o: ["Bandung", "Jakarta", "Surabaya", "Medan"],
-    a: 1
-  },
-  {
-    q: "CSS digunakan untuk?",
-    o: ["Logika", "Database", "Design", "Server"],
-    a: 2
-  }
-];
+let user, category, score=0, xp=0, current;
 
-let current;
-let score = 0;
-let time = 10;
-let timer;
+const DB = {
+  coding: [
+    {q:"HTML itu?", o:["Bahasa web","Game","OS","DB"], a:0},
+    {q:"CSS untuk?", o:["Logic","Design","Server","AI"], a:1}
+  ],
+  umum: [
+    {q:"Ibukota Indonesia?", o:["Jakarta","Bandung","Medan","Bali"], a:0},
+    {q:"2+2?", o:["3","4","5","6"], a:1}
+  ]
+};
 
-function loadQuestion() {
-  current = questions[Math.floor(Math.random() * questions.length)];
+// LOGIN SCREEN
+function login(){
+  document.getElementById("app").innerHTML = `
+    <h3>Masuk</h3>
+    <input id="name" placeholder="Nama kamu">
+    <select id="cat">
+      <option value="coding">Coding</option>
+      <option value="umum">Umum</option>
+    </select>
+    <br>
+    <button onclick="start()">START 🚀</button>
+  `;
+}
 
-  document.getElementById("question").innerText = current.q;
+// START GAME
+function start(){
+  user = document.getElementById("name").value || "Player";
+  category = document.getElementById("cat").value;
+  loadQ();
+}
 
-  let optHTML = "";
-  current.o.forEach((opt, i) => {
-    optHTML += `<div class="option" onclick="checkAnswer(${i})">${opt}</div>`;
+// LOAD QUESTION
+function loadQ(){
+  let list = DB[category];
+  current = list[Math.floor(Math.random()*list.length)];
+
+  let html = `<h3>${current.q}</h3>`;
+  current.o.forEach((opt,i)=>{
+    html += `<div class="option" onclick="check(this,${i})">${opt}</div>`;
   });
 
-  document.getElementById("options").innerHTML = optHTML;
+  html += `<p>Score: ${score} | XP: ${xp}</p>`;
+  html += `<button onclick="loadQ()">Next</button>`;
 
-  document.getElementById("feedback").innerText = "";
-  time = 10;
-  startTimer();
+  document.getElementById("app").innerHTML = html;
 }
 
-function checkAnswer(i) {
-  clearInterval(timer);
+// CHECK
+function check(el,i){
+  let opts=document.querySelectorAll(".option");
 
-  if (i === current.a) {
+  if(i===current.a){
+    el.classList.add("correct");
     score++;
-    document.getElementById("feedback").innerText = "✅ BENAR!";
-  } else {
-    document.getElementById("feedback").innerText = "❌ SALAH!";
+    xp+=10;
+  }else{
+    el.classList.add("wrong");
+    opts[current.a].classList.add("correct");
   }
 
-  document.getElementById("score").innerText = "Score: " + score;
+  saveScore();
 }
 
-function nextQuestion() {
-  loadQuestion();
+// SAVE LEADERBOARD
+function saveScore(){
+  let data = JSON.parse(localStorage.getItem("rank")||"[]");
+
+  let found = data.find(d=>d.name===user);
+  if(found){
+    found.score = score;
+    found.xp = xp;
+  }else{
+    data.push({name:user,score,xp});
+  }
+
+  localStorage.setItem("rank", JSON.stringify(data));
 }
 
-function startTimer() {
-  clearInterval(timer);
+// LEADERBOARD
+function showRank(){
+  let data = JSON.parse(localStorage.getItem("rank")||"[]");
+  data.sort((a,b)=>b.score-a.score);
 
-  timer = setInterval(() => {
-    time--;
-    document.getElementById("timer").innerText = "⏱️ " + time;
+  let html = "<h3>🏆 Leaderboard</h3>";
+  data.forEach(d=>{
+    html += `<p>${d.name} - Score:${d.score} XP:${d.xp}</p>`;
+  });
 
-    if (time <= 0) {
-      clearInterval(timer);
-      document.getElementById("feedback").innerText = "⏰ WAKTU HABIS!";
-    }
-  }, 1000);
+  html += `<button onclick="login()">Back</button>`;
+  document.getElementById("app").innerHTML = html;
 }
 
-loadQuestion();
+// INIT
+login();
 </script>
+
+<button onclick="showRank()">🏆 Leaderboard</button>
 
 </body>
 </html>
