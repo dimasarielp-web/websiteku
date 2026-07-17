@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Game Tebak Angka 🎮</title>
+  <title>Game Tebak Angka PRO 🎮🔥</title>
   <style>
     body {
       background: #0f172a;
@@ -27,7 +27,7 @@
 
     button {
       padding: 10px 15px;
-      margin-top: 10px;
+      margin: 5px;
       border: none;
       border-radius: 10px;
       background: #38bdf8;
@@ -38,7 +38,7 @@
 </head>
 <body>
 
-<h1>🎮 Game Tebak Angka</h1>
+<h1>🎮 Game Tebak Angka PRO</h1>
 
 <div class="game">
   <p>Tebak angka dari 1 sampai 10</p>
@@ -46,21 +46,36 @@
   <input type="number" id="tebakan">
   <br>
   <button onclick="cek()">Cek</button>
+  <button onclick="resetGame()">Reset 🔁</button>
 
   <p id="hasil"></p>
+  <p id="skor">Skor: 0</p>
 </div>
 
 <script>
 let angka = Math.floor(Math.random() * 10) + 1;
+let skor = 0;
 
 function cek() {
   let tebakan = document.getElementById("tebakan").value;
 
   if (tebakan == angka) {
+    skor++;
     document.getElementById("hasil").innerHTML = "🎉 Benar! Kamu jago!";
+    document.getElementById("skor").innerHTML = "Skor: " + skor;
+    angka = Math.floor(Math.random() * 10) + 1;
+  } else if (tebakan > angka) {
+    document.getElementById("hasil").innerHTML = "📉 Terlalu besar!";
   } else {
-    document.getElementById("hasil").innerHTML = "❌ Salah! Coba lagi!";
+    document.getElementById("hasil").innerHTML = "📈 Terlalu kecil!";
   }
+}
+
+function resetGame() {
+  skor = 0;
+  angka = Math.floor(Math.random() * 10) + 1;
+  document.getElementById("hasil").innerHTML = "";
+  document.getElementById("skor").innerHTML = "Skor: 0";
 }
 </script>
 
