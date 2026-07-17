@@ -1,10 +1,94 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Website Pertamaku</title>
+  <title>Kalkulator Dimas 🔥</title>
+  <style>
+    body {
+      background: #1e1e2f;
+      color: white;
+      text-align: center;
+      font-family: Arial;
+    }
+
+    .calculator {
+      background: #2c2c3e;
+      padding: 20px;
+      border-radius: 15px;
+      display: inline-block;
+      margin-top: 50px;
+    }
+
+    input {
+      width: 200px;
+      height: 40px;
+      font-size: 20px;
+      text-align: right;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    button {
+      width: 45px;
+      height: 45px;
+      margin: 5px;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      background: #4facfe;
+      color: white;
+    }
+
+    button:hover {
+      background: #00c6ff;
+    }
+  </style>
 </head>
 <body>
-  <h1>Halo Dunia! 🔥</h1>
-  <p>Ini website pertamaku dari HP 😎</p>
+
+<h1>Kalkulator Dimas 😎🔥</h1>
+
+<div class="calculator">
+  <input type="text" id="display" disabled><br>
+
+  <button onclick="tambah('7')">7</button>
+  <button onclick="tambah('8')">8</button>
+  <button onclick="tambah('9')">9</button>
+  <button onclick="tambah('/')">÷</button><br>
+
+  <button onclick="tambah('4')">4</button>
+  <button onclick="tambah('5')">5</button>
+  <button onclick="tambah('6')">6</button>
+  <button onclick="tambah('*')">×</button><br>
+
+  <button onclick="tambah('1')">1</button>
+  <button onclick="tambah('2')">2</button>
+  <button onclick="tambah('3')">3</button>
+  <button onclick="tambah('-')">−</button><br>
+
+  <button onclick="tambah('0')">0</button>
+  <button onclick="hapus()">C</button>
+  <button onclick="hitung()">=</button>
+  <button onclick="tambah('+')">+</button>
+</div>
+
+<script>
+function tambah(angka) {
+  document.getElementById("display").value += angka;
+}
+
+function hapus() {
+  document.getElementById("display").value = "";
+}
+
+function hitung() {
+  try {
+    document.getElementById("display").value = eval(document.getElementById("display").value);
+  } catch {
+    alert("Error!");
+  }
+}
+</script>
+
 </body>
 </html>
