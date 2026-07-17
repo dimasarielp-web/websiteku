@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Game Tembak 🎯</title>
+  <style>
+    body {
+      background: #020617;
+      color: white;
+      text-align: center;
+      font-family: Arial;
+    }
+
+    #gameArea {
+      width: 300px;
+      height: 300px;
+      background: #0f172a;
+      margin: 20px auto;
+      position: relative;
+      border-radius: 10px;
+    }
+
+    #target {
+      width: 50px;
+      height: 50px;
+      background: red;
+      border-radius: 50%;
+      position: absolute;
+      cursor: pointer;
+    }
+
+    button {
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      background: #22c55e;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🎯 Game Tembak</h1>
+<p>Klik target merah secepat mungkin!</p>
+
+<div id="gameArea">
+  <div id="target" onclick="tembak()"></div>
+</div>
+
+<p id="skor">Skor: 0</p>
+<p id="waktu">Waktu: 10</p>
+
+<button onclick="startGame()">Mulai</button>
+
+<script>
+let skor = 0;
+let waktu = 10;
+let interval;
+let gerak;
+
+function randomPosisi() {
+  let area = document.getElementById("gameArea");
+  let target = document.getElementById("target");
+
+  let x = Math.random() * (area.clientWidth - 50);
+  let y = Math.random() * (area.clientHeight - 50);
+
+  target.style.left = x + "px";
+  target.style.top = y + "px";
+}
+
+function tembak() {
+  skor++;
+  document.getElementById("skor").innerHTML = "Skor: " + skor;
+  randomPosisi();
+}
+
+function startGame() {
+  skor = 0;
+  waktu = 10;
+  document.getElementById("skor").innerHTML = "Skor: 0";
+  document.getElementById("waktu").innerHTML = "Waktu: 10";
+
+  randomPosisi();
+
+  clearInterval(interval);
+  clearInterval(gerak);
+
+  interval = setInterval(() => {
+    waktu--;
+    document.getElementById("waktu").innerHTML = "Waktu: " + waktu;
+
+    if (waktu == 0) {
+      clearInterval(interval);
+      clearInterval(gerak);
+      alert("Game selesai! Skor kamu: " + skor);
+    }
+  }, 1000);
+
+  gerak = setInterval(randomPosisi, 800);
+}
+</script>
+
+</body>
+</html>
