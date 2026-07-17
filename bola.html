@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Quiz Sepak Bola API ⚽</title>
+<title>Quiz Bola Dewa ⚽🔥</title>
 
 <style>
 body {
@@ -19,15 +19,14 @@ body {
   border-radius: 15px;
   width: 90%;
   max-width: 400px;
-  margin-left: auto;
-  margin-right: auto;
+  margin: auto;
 }
 
 button {
   display: block;
   margin: 10px auto;
   padding: 10px;
-  width: 80%;
+  width: 85%;
   border: none;
   border-radius: 10px;
   cursor: pointer;
@@ -35,50 +34,61 @@ button {
 }
 
 .normal { background: #3498db; }
+.timer { color: yellow; font-size: 18px; }
 </style>
 </head>
 
 <body>
 
 <div class="box">
-  <h2>⚽ Quiz Sepak Bola (Online)</h2>
+  <h2>⚽ Quiz Bola Dewa</h2>
+  <p class="timer">⏱️ <span id="timer">10</span> detik</p>
   <p id="soal">Loading...</p>
   <div id="pilihan"></div>
   <p id="skor"></p>
 </div>
 
+<!-- SOUND -->
+<audio id="benarSound" src="https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3"></audio>
+<audio id="salahSound" src="https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3"></audio>
+
 <script>
 let index = 0;
 let skor = 0;
 let soalList = [];
+let waktu = 10;
+let interval;
 
-// ambil soal dari API
+// ambil soal API
 async function ambilSoal() {
-  try {
-    let res = await fetch("https://opentdb.com/api.php?amount=10&category=21&type=multiple");
-    let data = await res.json();
+  let res = await fetch("https://opentdb.com/api.php?amount=10&category=21&type=multiple");
+  let data = await res.json();
 
-    soalList = data.results.map(s => {
-      let semuaJawaban = [...s.incorrect_answers, s.correct_answer];
+  soalList = data.results.map(s => {
+    let jawaban = [...s.incorrect_answers, s.correct_answer];
+    jawaban.sort(() => Math.random() - 0.5);
 
-      // acak pilihan
-      semuaJawaban.sort(() => Math.random() - 0.5);
+    return {
+      soal: decodeHTML(s.question),
+      pilihan: jawaban.map(j => decodeHTML(j)),
+      jawaban: decodeHTML(s.correct_answer)
+    };
+  });
 
-      return {
-        soal: decodeHTML(s.question),
-        pilihan: semuaJawaban.map(j => decodeHTML(j)),
-        jawaban: decodeHTML(s.correct_answer)
-      };
-    });
-
-    tampilSoal();
-
-  } catch (e) {
-    document.getElementById("soal").innerText = "Gagal ambil soal 😢";
-  }
+  tampilSoal();
 }
 
-// decode HTML (biar ga aneh)
+// translate sederhana (biar Indo)
+function translate(text) {
+  return text
+    .replace("Which", "Yang mana")
+    .replace("What", "Apa")
+    .replace("Who", "Siapa")
+    .replace("Where", "Dimana")
+    .replace("When", "Kapan");
+}
+
+// decode HTML
 function decodeHTML(html) {
   let txt = document.createElement("textarea");
   txt.innerHTML = html;
@@ -92,8 +102,10 @@ function tampilSoal() {
     return;
   }
 
+  resetTimer();
+
   let s = soalList[index];
-  document.getElementById("soal").innerText = s.soal;
+  document.getElementById("soal").innerText = translate(s.soal);
 
   let html = "";
   s.pilihan.forEach(p => {
@@ -105,12 +117,16 @@ function tampilSoal() {
 }
 
 function jawab(p) {
+  clearInterval(interval);
+
   let benar = soalList[index].jawaban;
 
   if (p === benar) {
     skor++;
+    document.getElementById("benarSound").play();
     alert("✅ Benar!");
   } else {
+    document.getElementById("salahSound").play();
     alert("❌ Salah! Jawaban: " + benar);
   }
 
@@ -118,7 +134,27 @@ function jawab(p) {
   tampilSoal();
 }
 
-// mulai
+// TIMER
+function resetTimer() {
+  clearInterval(interval);
+  waktu = 10;
+  document.getElementById("timer").innerText = waktu;
+
+  interval = setInterval(() => {
+    waktu--;
+    document.getElementById("timer").innerText = waktu;
+
+    if (waktu <= 0) {
+      clearInterval(interval);
+      document.getElementById("salahSound").play();
+      alert("⏰ Waktu habis!");
+      index++;
+      tampilSoal();
+    }
+  }, 1000);
+}
+
+// start
 ambilSoal();
 </script>
 
