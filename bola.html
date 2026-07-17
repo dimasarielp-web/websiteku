@@ -1,123 +1,113 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>Quiz Sepak Bola ⚽</title>
-  <style>
-    body {
-      font-family: Arial;
-      text-align: center;
-      background: linear-gradient(to right, #0f2027, #2c5364);
-      color: white;
-    }
-    .box {
-      margin-top: 50px;
-      background: #1e2a38;
-      padding: 20px;
-      border-radius: 15px;
-      width: 90%;
-      max-width: 400px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    button {
-      display: block;
-      margin: 10px auto;
-      padding: 10px;
-      width: 80%;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    .benar { background: green; }
-    .salah { background: red; }
-    .normal { background: #3498db; }
-  </style>
+<meta charset="UTF-8">
+<title>Quiz Sepak Bola API ⚽</title>
+
+<style>
+body {
+  font-family: Arial;
+  text-align: center;
+  background: linear-gradient(to right, #141e30, #243b55);
+  color: white;
+}
+
+.box {
+  margin-top: 40px;
+  background: #1e2a38;
+  padding: 20px;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+button {
+  display: block;
+  margin: 10px auto;
+  padding: 10px;
+  width: 80%;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.normal { background: #3498db; }
+</style>
 </head>
+
 <body>
 
 <div class="box">
-  <h2>⚽ Quiz Sepak Bola</h2>
-  <p id="soal"></p>
+  <h2>⚽ Quiz Sepak Bola (Online)</h2>
+  <p id="soal">Loading...</p>
   <div id="pilihan"></div>
   <p id="skor"></p>
-  <button onclick="ulang()">🔄 Ulang</button>
 </div>
 
 <script>
-const semuaSoal = [
-  {
-    soal: "Siapa pemain dengan Ballon d'Or terbanyak?",
-    pilihan: ["Ronaldo", "Messi", "Neymar", "Mbappe"],
-    jawaban: "Messi"
-  },
-  {
-    soal: "Negara juara Piala Dunia 2018?",
-    pilihan: ["Brasil", "Prancis", "Argentina", "Jerman"],
-    jawaban: "Prancis"
-  },
-  {
-    soal: "Klub Lionel Messi sekarang (2025)?",
-    pilihan: ["Barcelona", "PSG", "Inter Miami", "Al Nassr"],
-    jawaban: "Inter Miami"
-  },
-  {
-    soal: "Siapa GOAT menurut banyak orang?",
-    pilihan: ["Messi", "Ronaldo", "Keduanya", "Pelé"],
-    jawaban: "Keduanya"
-  },
-  {
-    soal: "Liga Inggris disebut?",
-    pilihan: ["La Liga", "Serie A", "Premier League", "Bundesliga"],
-    jawaban: "Premier League"
-  },
-  {
-    soal: "Pemain dengan julukan CR7?",
-    pilihan: ["Messi", "Ronaldo", "Mbappe", "Haaland"],
-    jawaban: "Ronaldo"
-  },
-  {
-    soal: "Negara asal Neymar?",
-    pilihan: ["Argentina", "Brasil", "Portugal", "Spanyol"],
-    jawaban: "Brasil"
-  },
-  {
-    soal: "Klub Real Madrid berasal dari?",
-    pilihan: ["Italia", "Spanyol", "Inggris", "Jerman"],
-    jawaban: "Spanyol"
-  }
-];
-
-// shuffle soal
-let soalAcak = semuaSoal.sort(() => Math.random() - 0.5);
-
 let index = 0;
 let skor = 0;
+let soalList = [];
+
+// ambil soal dari API
+async function ambilSoal() {
+  try {
+    let res = await fetch("https://opentdb.com/api.php?amount=10&category=21&type=multiple");
+    let data = await res.json();
+
+    soalList = data.results.map(s => {
+      let semuaJawaban = [...s.incorrect_answers, s.correct_answer];
+
+      // acak pilihan
+      semuaJawaban.sort(() => Math.random() - 0.5);
+
+      return {
+        soal: decodeHTML(s.question),
+        pilihan: semuaJawaban.map(j => decodeHTML(j)),
+        jawaban: decodeHTML(s.correct_answer)
+      };
+    });
+
+    tampilSoal();
+
+  } catch (e) {
+    document.getElementById("soal").innerText = "Gagal ambil soal 😢";
+  }
+}
+
+// decode HTML (biar ga aneh)
+function decodeHTML(html) {
+  let txt = document.createElement("textarea");
+  txt.innerHTML = html;
+  return txt.value;
+}
 
 function tampilSoal() {
-  if (index >= soalAcak.length) {
-    document.getElementById("soal").innerHTML = "🎉 Selesai! Skor kamu: " + skor;
+  if (index >= soalList.length) {
+    document.getElementById("soal").innerHTML = "🎉 Selesai! Skor: " + skor;
     document.getElementById("pilihan").innerHTML = "";
     return;
   }
 
-  let s = soalAcak[index];
+  let s = soalList[index];
   document.getElementById("soal").innerText = s.soal;
-  
-  let pilihanHTML = "";
+
+  let html = "";
   s.pilihan.forEach(p => {
-    pilihanHTML += `<button class="normal" onclick="jawab('${p}')">${p}</button>`;
+    html += `<button class="normal" onclick="jawab('${p}')">${p}</button>`;
   });
 
-  document.getElementById("pilihan").innerHTML = pilihanHTML;
+  document.getElementById("pilihan").innerHTML = html;
   document.getElementById("skor").innerText = "Skor: " + skor;
 }
 
-function jawab(pilihan) {
-  let benar = soalAcak[index].jawaban;
-  
-  if (pilihan === benar) {
+function jawab(p) {
+  let benar = soalList[index].jawaban;
+
+  if (p === benar) {
     skor++;
     alert("✅ Benar!");
   } else {
@@ -128,14 +118,8 @@ function jawab(pilihan) {
   tampilSoal();
 }
 
-function ulang() {
-  index = 0;
-  skor = 0;
-  soalAcak = semuaSoal.sort(() => Math.random() - 0.5);
-  tampilSoal();
-}
-
-tampilSoal();
+// mulai
+ambilSoal();
 </script>
 
 </body>
