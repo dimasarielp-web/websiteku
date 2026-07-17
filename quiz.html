@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Quiz Game 🔥</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: Arial;
+      background: linear-gradient(135deg, #1d2b64, #f8cdda);
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+
+    #quizBox {
+      background: rgba(0,0,0,0.5);
+      padding: 20px;
+      border-radius: 15px;
+      max-width: 400px;
+      margin: auto;
+    }
+
+    .option {
+      background: #444;
+      margin: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .option:hover {
+      background: #666;
+    }
+
+    #timer {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    #score {
+      margin-top: 10px;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      background: orange;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>🧠 QUIZ GAME</h2>
+
+<div id="quizBox">
+  <div id="timer">⏱️ 10</div>
+  <h3 id="question">Loading...</h3>
+
+  <div id="options"></div>
+
+  <p id="feedback"></p>
+  <p id="score">Score: 0</p>
+
+  <button onclick="nextQuestion()">Next ➡️</button>
+</div>
+
+<script>
+const questions = [
+  {
+    q: "Bahasa pemrograman untuk web?",
+    o: ["Python", "HTML", "C++", "Java"],
+    a: 1
+  },
+  {
+    q: "2 + 2 = ?",
+    o: ["3", "4", "5", "6"],
+    a: 1
+  },
+  {
+    q: "Ibukota Indonesia?",
+    o: ["Bandung", "Jakarta", "Surabaya", "Medan"],
+    a: 1
+  },
+  {
+    q: "CSS digunakan untuk?",
+    o: ["Logika", "Database", "Design", "Server"],
+    a: 2
+  }
+];
+
+let current;
+let score = 0;
+let time = 10;
+let timer;
+
+function loadQuestion() {
+  current = questions[Math.floor(Math.random() * questions.length)];
+
+  document.getElementById("question").innerText = current.q;
+
+  let optHTML = "";
+  current.o.forEach((opt, i) => {
+    optHTML += `<div class="option" onclick="checkAnswer(${i})">${opt}</div>`;
+  });
+
+  document.getElementById("options").innerHTML = optHTML;
+
+  document.getElementById("feedback").innerText = "";
+  time = 10;
+  startTimer();
+}
+
+function checkAnswer(i) {
+  clearInterval(timer);
+
+  if (i === current.a) {
+    score++;
+    document.getElementById("feedback").innerText = "✅ BENAR!";
+  } else {
+    document.getElementById("feedback").innerText = "❌ SALAH!";
+  }
+
+  document.getElementById("score").innerText = "Score: " + score;
+}
+
+function nextQuestion() {
+  loadQuestion();
+}
+
+function startTimer() {
+  clearInterval(timer);
+
+  timer = setInterval(() => {
+    time--;
+    document.getElementById("timer").innerText = "⏱️ " + time;
+
+    if (time <= 0) {
+      clearInterval(timer);
+      document.getElementById("feedback").innerText = "⏰ WAKTU HABIS!";
+    }
+  }, 1000);
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>
