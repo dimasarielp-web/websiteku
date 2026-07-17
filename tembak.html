@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Game Tembak 🎯</title>
+  <title>Game Tembak Ultimate 🎯🔥</title>
   <style>
     body {
       background: #020617;
@@ -11,27 +11,28 @@
     }
 
     #gameArea {
-      width: 300px;
-      height: 300px;
+      width: 320px;
+      height: 320px;
       background: #0f172a;
       margin: 20px auto;
       position: relative;
-      border-radius: 10px;
+      border-radius: 12px;
+      overflow: hidden;
     }
 
-    #target {
+    .target {
       width: 50px;
       height: 50px;
-      background: red;
       border-radius: 50%;
       position: absolute;
       cursor: pointer;
+      transition: all 0.2s;
     }
 
     button {
       padding: 10px;
-      border: none;
       border-radius: 10px;
+      border: none;
       background: #22c55e;
       font-weight: bold;
     }
@@ -39,64 +40,122 @@
 </head>
 <body>
 
-<h1>🎯 Game Tembak</h1>
-<p>Klik target merah secepat mungkin!</p>
+<h1>🎯 Game Tembak Ultimate</h1>
 
-<div id="gameArea">
-  <div id="target" onclick="tembak()"></div>
-</div>
+<div id="gameArea" onclick="miss()"></div>
 
 <p id="skor">Skor: 0</p>
-<p id="waktu">Waktu: 10</p>
+<p id="waktu">Waktu: 15</p>
 
 <button onclick="startGame()">Mulai</button>
 
+<!-- SOUND -->
+<audio id="shoot" src="https://www.soundjay.com/button/sounds/button-16.mp3"></audio>
+<audio id="missSound" src="https://www.soundjay.com/button/sounds/button-10.mp3"></audio>
+<audio id="bgm" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" loop></audio>
+
 <script>
 let skor = 0;
-let waktu = 10;
+let waktu = 15;
 let interval;
-let gerak;
+let spawn;
 
-function randomPosisi() {
+function randomPosisi(el) {
   let area = document.getElementById("gameArea");
-  let target = document.getElementById("target");
-
   let x = Math.random() * (area.clientWidth - 50);
   let y = Math.random() * (area.clientHeight - 50);
-
-  target.style.left = x + "px";
-  target.style.top = y + "px";
+  el.style.left = x + "px";
+  el.style.top = y + "px";
 }
 
-function tembak() {
-  skor++;
+function buatTarget() {
+  let area = document.getElementById("gameArea");
+
+  let el = document.createElement("div");
+  el.classList.add("target");
+
+  let type = Math.random();
+
+  if (type < 0.6) {
+    el.style.background = "red"; // normal
+    el.onclick = (e) => tembak(e, 1);
+  } else if (type < 0.9) {
+    el.style.background = "lime"; // bonus
+    el.onclick = (e) => tembak(e, 2);
+  } else {
+    el.style.background = "black"; // bomb
+    el.onclick = (e) => bom(e);
+  }
+
+  randomPosisi(el);
+  area.appendChild(el);
+
+  setTimeout(() => {
+    el.remove();
+  }, 800);
+}
+
+function tembak(e, poin) {
+  e.stopPropagation();
+
+  skor += poin;
   document.getElementById("skor").innerHTML = "Skor: " + skor;
-  randomPosisi();
+
+  let s = document.getElementById("shoot");
+  s.currentTime = 0;
+  s.play();
+
+  let el = e.target;
+  el.style.transform = "scale(1.5)";
+  el.style.background = "yellow";
+
+  setTimeout(() => el.remove(), 100);
+}
+
+function bom(e) {
+  e.stopPropagation();
+
+  alert("💣 KENA BOM! GAME OVER!");
+  location.reload();
+}
+
+function miss() {
+  let m = document.getElementById("missSound");
+  m.currentTime = 0;
+  m.play();
+
+  document.body.style.transform = "translate(3px,3px)";
+  setTimeout(() => {
+    document.body.style.transform = "translate(0,0)";
+  }, 50);
 }
 
 function startGame() {
   skor = 0;
-  waktu = 10;
-  document.getElementById("skor").innerHTML = "Skor: 0";
-  document.getElementById("waktu").innerHTML = "Waktu: 10";
+  waktu = 15;
 
-  randomPosisi();
+  document.getElementById("skor").innerHTML = "Skor: 0";
+  document.getElementById("waktu").innerHTML = "Waktu: 15";
+
+  let bgm = document.getElementById("bgm");
+  bgm.volume = 0.3;
+  bgm.play();
 
   clearInterval(interval);
-  clearInterval(gerak);
+  clearInterval(spawn);
 
   interval = setInterval(() => {
     waktu--;
     document.getElementById("waktu").innerHTML = "Waktu: " + waktu;
 
-    if (waktu == 0) {
+    if (waktu <= 0) {
       clearInterval(interval);
-      clearInterval(gerak);
-      alert("Game selesai! Skor kamu: " + skor);
+      clearInterval(spawn);
+      alert("Game selesai! Skor: " + skor);
     }
   }, 1000);
 
-  gerak = setInterval(randomPosisi, 800);
+  spawn = setInterval(buatTarget, 600);
 }
 </script>
 
