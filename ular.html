@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ular Tangga PRO 🐍🔥</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      text-align: center;
+      font-family: Arial;
+      background: #111;
+      color: white;
+    }
+
+    #board {
+      width: 320px;
+      height: 320px;
+      margin: auto;
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 2px;
+    }
+
+    .cell {
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .p1 { background: lime; }
+    .p2 { background: cyan; }
+
+    button {
+      margin-top: 15px;
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    #dice {
+      font-size: 40px;
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>🐍 Ular Tangga PRO 🎲</h2>
+
+<p id="turn">Giliran: Player 1</p>
+<div id="dice">🎲</div>
+
+<div id="board"></div>
+
+<button onclick="rollDice()">LEMpar 🎲</button>
+
+<script>
+let p1 = 1;
+let p2 = 1;
+let turn = 1;
+let rolling = false;
+
+const snakes = {16:6, 48:30, 79:19, 93:68};
+const ladders = {3:22, 20:59, 41:80, 71:92};
+
+function createBoard() {
+  const board = document.getElementById("board");
+
+  for (let i = 100; i >= 1; i--) {
+    let cell = document.createElement("div");
+    cell.className = "cell";
+
+    // warna beda
+    cell.style.background = i % 2 ? "#333" : "#555";
+
+    cell.id = "c" + i;
+    cell.innerText = i;
+    board.appendChild(cell);
+  }
+}
+
+function updateBoard() {
+  document.querySelectorAll(".cell").forEach(c => c.classList.remove("p1","p2"));
+
+  document.getElementById("c"+p1)?.classList.add("p1");
+  document.getElementById("c"+p2)?.classList.add("p2");
+
+  document.getElementById("turn").innerText = "Giliran: Player " + turn;
+}
+
+function sleep(ms){
+  return new Promise(r=>setTimeout(r,ms));
+}
+
+async function movePlayer(player, steps) {
+  for (let i = 0; i < steps; i++) {
+    if (player === 1) p1++;
+    else p2++;
+
+    updateBoard();
+    await sleep(200);
+  }
+
+  let pos = player === 1 ? p1 : p2;
+
+  if (ladders[pos]) {
+    alert("🪜 Naik tangga!");
+    if (player === 1) p1 = ladders[pos];
+    else p2 = ladders[pos];
+  }
+
+  else if (snakes[pos]) {
+    alert("🐍 Digigit ular!");
+    if (player === 1) p1 = snakes[pos];
+    else p2 = snakes[pos];
+  }
+
+  if (p1 >= 100) {
+    alert("🏆 Player 1 MENANG!");
+    location.reload();
+  }
+
+  if (p2 >= 100) {
+    alert("🏆 Player 2 MENANG!");
+    location.reload();
+  }
+
+  updateBoard();
+}
+
+async function rollDice() {
+  if (rolling) return;
+  rolling = true;
+
+  let diceEl = document.getElementById("dice");
+
+  // animasi dadu
+  for (let i=0;i<10;i++){
+    diceEl.innerText = Math.floor(Math.random()*6)+1;
+    await sleep(50);
+  }
+
+  let dice = Math.floor(Math.random()*6)+1;
+  diceEl.innerText = dice;
+
+  if (turn === 1) {
+    await movePlayer(1, dice);
+    turn = 2;
+  } else {
+    await movePlayer(2, dice);
+    turn = 1;
+  }
+
+  rolling = false;
+  updateBoard();
+}
+
+createBoard();
+updateBoard();
+</script>
+
+</body>
+</html>
