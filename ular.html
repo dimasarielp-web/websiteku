@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Ular Tangga PRO 🐍🔥</title>
+  <title>Ular Tangga GILA 🐍🔥</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
     body {
       text-align: center;
       font-family: Arial;
-      background: #111;
+      background: linear-gradient(#0f2027, #203a43, #2c5364);
       color: white;
     }
 
@@ -19,6 +19,7 @@
       display: grid;
       grid-template-columns: repeat(10, 1fr);
       gap: 2px;
+      position: relative;
     }
 
     .cell {
@@ -26,28 +27,43 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      position: relative;
     }
 
     .p1 { background: lime; }
     .p2 { background: cyan; }
 
-    button {
-      margin-top: 15px;
-      padding: 10px;
-      font-size: 16px;
+    .snake::after {
+      content: "🐍";
+      position: absolute;
+      font-size: 14px;
+    }
+
+    .ladder::after {
+      content: "🪜";
+      position: absolute;
+      font-size: 14px;
     }
 
     #dice {
-      font-size: 40px;
+      font-size: 50px;
       margin: 10px;
+    }
+
+    button {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 10px;
+      border: none;
+      background: orange;
+      color: black;
     }
   </style>
 </head>
 <body>
 
-<h2>🐍 Ular Tangga PRO 🎲</h2>
-
-<p id="turn">Giliran: Player 1</p>
+<h2>🐍 ULAR TANGGA GILA 🎲</h2>
+<p id="turn">Player 1</p>
 <div id="dice">🎲</div>
 
 <div id="board"></div>
@@ -69,95 +85,10 @@ function createBoard() {
   for (let i = 100; i >= 1; i--) {
     let cell = document.createElement("div");
     cell.className = "cell";
-
-    // warna beda
-    cell.style.background = i % 2 ? "#333" : "#555";
-
     cell.id = "c" + i;
-    cell.innerText = i;
-    board.appendChild(cell);
-  }
-}
 
-function updateBoard() {
-  document.querySelectorAll(".cell").forEach(c => c.classList.remove("p1","p2"));
+    // warna papan
+    cell.style.background = i % 2 ? "#1e3c72" : "#2a5298";
 
-  document.getElementById("c"+p1)?.classList.add("p1");
-  document.getElementById("c"+p2)?.classList.add("p2");
-
-  document.getElementById("turn").innerText = "Giliran: Player " + turn;
-}
-
-function sleep(ms){
-  return new Promise(r=>setTimeout(r,ms));
-}
-
-async function movePlayer(player, steps) {
-  for (let i = 0; i < steps; i++) {
-    if (player === 1) p1++;
-    else p2++;
-
-    updateBoard();
-    await sleep(200);
-  }
-
-  let pos = player === 1 ? p1 : p2;
-
-  if (ladders[pos]) {
-    alert("🪜 Naik tangga!");
-    if (player === 1) p1 = ladders[pos];
-    else p2 = ladders[pos];
-  }
-
-  else if (snakes[pos]) {
-    alert("🐍 Digigit ular!");
-    if (player === 1) p1 = snakes[pos];
-    else p2 = snakes[pos];
-  }
-
-  if (p1 >= 100) {
-    alert("🏆 Player 1 MENANG!");
-    location.reload();
-  }
-
-  if (p2 >= 100) {
-    alert("🏆 Player 2 MENANG!");
-    location.reload();
-  }
-
-  updateBoard();
-}
-
-async function rollDice() {
-  if (rolling) return;
-  rolling = true;
-
-  let diceEl = document.getElementById("dice");
-
-  // animasi dadu
-  for (let i=0;i<10;i++){
-    diceEl.innerText = Math.floor(Math.random()*6)+1;
-    await sleep(50);
-  }
-
-  let dice = Math.floor(Math.random()*6)+1;
-  diceEl.innerText = dice;
-
-  if (turn === 1) {
-    await movePlayer(1, dice);
-    turn = 2;
-  } else {
-    await movePlayer(2, dice);
-    turn = 1;
-  }
-
-  rolling = false;
-  updateBoard();
-}
-
-createBoard();
-updateBoard();
-</script>
-
-</body>
-</html>
+    // tandain ular/tangga
+    if (sn
